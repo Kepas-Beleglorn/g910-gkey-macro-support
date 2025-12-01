@@ -1,3 +1,5 @@
+from asyncio import wait_for
+
 import usb
 from g910_gkeys.lib.usb_device import USBDevice
 from g910_gkeys.misc.logger import Logger
@@ -21,6 +23,9 @@ def change_profile(device: USBDevice, profile: str):
     packet = bytearray(device.keyboard.events.memoryKeysLEDs["MEMORY_1"])
     packet[4] = m_mask
     device.dev.ctrl_transfer(0x21, 0x09, 0x0211, 1, bytes(packet), device.usb_timeout)
+
+    # wait for previous action to finish
+    device.dev.read(device.endpoint, device.endpoint.wMaxPacketSize, device.usb_timeout)
 
     # (de-) activate MR
     packet = bytearray(device.keyboard.events.memoryKeysLEDs[record_profile])
